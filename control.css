@@ -1,0 +1,51 @@
+*{box-sizing:border-box;}
+body{
+  margin:0;
+  background:#000;
+  color:#fff;
+  font-family: system-ui, -apple-system, "Noto Sans TC", sans-serif;
+}
+.app{max-width:1600px;margin:0 auto;padding:16px;}
+h1{margin:0 0 12px 0;}
+
+.dayRow{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px;}
+.spacer{flex:1;}
+
+.dayBtn,.btn{
+  background:#111;
+  border:1px solid #333;
+  color:#fff;
+  border-radius:12px;
+  padding:10px 14px;
+  font-weight:800;
+}
+.btn.warn{border-color:#555;}
+.dayBtn:active,.btn:active{transform:scale(.97);}
+
+.courts{
+  display:grid;
+  grid-template-columns: repeat(6, minmax(200px, 1fr));
+  gap:12px;
+}
+.card{
+  background:#111;
+  border:1px solid #333;
+  border-radius:14px;
+  padding:14px;
+}
+.head{
+  display:flex;
+  justify-content:space-between;
+  margin-bottom:10px;
+}
+.row{display:flex;gap:10px;}
+.row button{
+  flex:1;
+  background:#1a1a1a;
+  border:1px solid #333;
+  color:#fff;
+  border-radius:12px;
+  padding:10px;
+  font-weight:800;
+}
+.msg{margin-top:12px;opacity:.9;font-size:13px;}
