@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <title>羽恆盃 控制板</title>
+  <link rel="stylesheet" href="control.css" />
+</head>
+<body>
+  <div class="app">
+    <h1>🎮 羽恆盃 控制板</h1>
+
+    <div class="dayRow">
+      <button class="dayBtn" onclick="setDate('2026-02-07')">2/7（第一天）</button>
+      <button class="dayBtn" onclick="setDate('2026-02-08')">2/8（第二天）</button>
+
+      <div class="spacer"></div>
+
+      <button class="btn" onclick="setStatus('比賽中')">▶ 比賽中</button>
+      <button class="btn warn" onclick="setStatus('中場休息')">⏸ 中場休息</button>
+    </div>
+
+    <div id="courts" class="courts"></div>
+    <div id="msg" class="msg">狀態：待命</div>
+  </div>
+
+  <script src="control.js?v=1"></script>
+</body>
+</html>
