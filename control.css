@@ -11,21 +11,34 @@ h1{margin:0 0 12px 0;}
 .dayRow{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px;}
 .spacer{flex:1;}
 
-.dayBtn,.btn{
+.dayBtn{
   background:#111;
   border:1px solid #333;
   color:#fff;
   border-radius:12px;
   padding:10px 14px;
-  font-weight:800;
+  font-weight:1000;
+}
+.dayBtn.active{border-color:#fff; box-shadow:0 0 0 1px #fff inset;}
+.dayBtn:active{transform:scale(.98);}
+
+.btn{
+  background:#141414;
+  border:1px solid #333;
+  color:#fff;
+  border-radius:12px;
+  padding:10px 14px;
+  font-weight:1000;
 }
 .btn.warn{border-color:#555;}
-.dayBtn:active,.btn:active{transform:scale(.97);}
+.btn:active{transform:scale(.98);}
 
 .courts{
   display:grid;
   grid-template-columns: repeat(6, minmax(200px, 1fr));
   gap:12px;
+  overflow-x:auto;
+  padding-bottom:8px;
 }
 .card{
   background:#111;
@@ -36,8 +49,12 @@ h1{margin:0 0 12px 0;}
 .head{
   display:flex;
   justify-content:space-between;
+  align-items:center;
   margin-bottom:10px;
 }
+.name{font-weight:1000;font-size:18px;}
+.where{opacity:.85;font-size:13px;}
+
 .row{display:flex;gap:10px;}
 .row button{
   flex:1;
@@ -45,7 +62,9 @@ h1{margin:0 0 12px 0;}
   border:1px solid #333;
   color:#fff;
   border-radius:12px;
-  padding:10px;
-  font-weight:800;
+  padding:12px 10px;
+  font-weight:1000;
 }
+.row button:active{transform:scale(.98);}
+
 .msg{margin-top:12px;opacity:.9;font-size:13px;}
