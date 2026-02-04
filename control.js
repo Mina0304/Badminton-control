@@ -1,44 +1,81 @@
 const API_URL =
-  "https://script.google.com/macros/s/AKfycby1uXfJ15dzycw1Oej0WGGLN_wyy5RrA6JL_0uf19ivT9RdFXjNjri4fsWoutrkOBhY9w/exec";
+  "https://script.google.com/macros/s/AKfycbyg_h0KqcPVuojAXTJROQ8Zg6x-mXHsYceYGUbyDzYVhWnwtPWZ72L0jtuuhMXcG_2mcg/exec";
 
-function showMsg(t){
+function showMsg(t) {
   const el = document.getElementById("msg");
-  if(el) el.textContent = "狀態：" + t;
+  if (el) el.textContent = "狀態：" + t;
 }
-function loadJSONP(){
-  return new Promise((resolve,reject)=>{
-    const cb = "cb_" + Date.now() + "_" + Math.random().toString(36).slice(2);
-    window[cb] = (p) => { delete window[cb]; script.remove(); resolve(p); };
 
+/** ✅ 把後端回來的日期統一變成 YYYY-MM-DD
+ *  - 支援：2026-02-07T15:00:00.000Z
+ *  - 支援：2026/2/7
+ *  - 支援：2-7（會補 2026）
+ */
+function normalizeDate(v) {
+  if (!v) return "";
+  let s = String(v).trim();
+
+  // 2026-02-07T...Z -> 2026-02-07
+  if (s.includes("T")) s = s.split("T")[0];
+
+  // 2026/2/7 -> 2026-2-7
+  s = s.replace(/\//g, "-");
+
+  // 2-7 -> 2026-02-07
+  if (/^\d{1,2}-\d{1,2}$/.test(s)) {
+    const [m, d] = s.split("-").map((x) => x.padStart(2, "0"));
+    return `2026-${m}-${d}`;
+  }
+
+  // 2026-2-7 -> 2026-02-07
+  const m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+  if (m) return `${m[1]}-${m[2].padStart(2, "0")}-${m[3].padStart(2, "0")}`;
+
+  return s; // 不認得就原樣回傳（至少不炸）
+}
+
+// JSONP 讀取（不怕 CORS）
+function loadJSONP(url) {
+  return new Promise((resolve, reject) => {
+    const cb = "cb_" + Math.random().toString(36).slice(2);
+    window[cb] = (payload) => {
+      delete window[cb];
+      script.remove();
+      resolve(payload);
+    };
     const script = document.createElement("script");
-    // ✅ 同時帶 callback 與 cb 兩種參數名（保險）
-    script.src = `${API_URL}?type=get&callback=${cb}&cb=${cb}&_=${Date.now()}`;
+    script.src = `${url}?callback=${cb}&_=${Date.now()}`;
     script.onerror = () => reject(new Error("JSONP 載入失敗"));
     document.body.appendChild(script);
   });
 }
 
 // 用 Image 觸發 GET（最穩，不怕 CORS/preflight）
-function hit(url){
+function hit(url) {
   const img = new Image();
   img.onload = () => showMsg("✅ 已送出（看顯示版是否變）");
-  img.onerror = () => showMsg("⚠️ 回應被擋但可能成功（請看顯示版）");
+  img.onerror = () => showMsg("⚠️ 送出可能成功但回應被擋（看顯示版）");
   img.src = url + "&_=" + Date.now();
 }
 
-async function refresh(){
+async function refresh() {
   const p = await loadJSONP(API_URL);
-  if(!p.ok) throw new Error(p.error || "讀取失敗");
+  if (!p.ok) throw new Error(p.error || "讀取失敗");
   const state = p.data || {};
 
-  // 亮起日期按鈕
-  document.getElementById("d0702").classList.toggle("active", state.date === "2026-02-07");
-  document.getElementById("d0802").classList.toggle("active", state.date === "2026-02-08");
+  // ✅ 這裡是重點：用 normalizeDate 來比對
+  const dateIso = normalizeDate(state.date || state.day || state.Date);
+
+  // 亮起日期按鈕（修好）
+  const b7 = document.getElementById("d0702");
+  const b8 = document.getElementById("d0802");
+  if (b7) b7.classList.toggle("active", dateIso === "2026-02-07");
+  if (b8) b8.classList.toggle("active", dateIso === "2026-02-08");
 
   // 6 場地卡片顯示目前 idx
   const host = document.getElementById("courts");
   host.innerHTML = "";
-  for(let c=1;c<=6;c++){
+  for (let c = 1; c <= 6; c++) {
     const key = `court${c}`;
     const idx = Number(state[key] ?? 0);
 
@@ -58,42 +95,35 @@ async function refresh(){
   }
 }
 
-window.stepCourt = function(courtKey, delta, idx){
+window.stepCourt = function (courtKey, delta, idx) {
   const nextVal = Math.max(0, idx + delta);
   showMsg(`送出：${courtKey} → ${nextVal}`);
-  hit(`${API_URL}?type=set&key=${encodeURIComponent(courtKey)}&value=${encodeURIComponent(nextVal)}`);
-  // 讓控制板自己也更新一下
-  setTimeout(()=>refresh().catch(()=>{}), 400);
+  hit(
+    `${API_URL}?type=set&key=${encodeURIComponent(
+      courtKey
+    )}&value=${encodeURIComponent(nextVal)}`
+  );
+  setTimeout(() => refresh().catch(() => {}), 400);
 };
 
-window.setStatus = function(text){
+window.setStatus = function (text) {
   showMsg(`送出：status=${text}`);
   hit(`${API_URL}?type=set&key=status&value=${encodeURIComponent(text)}`);
 };
 
-window.setDate = function(iso){
+window.setDate = function (iso) {
+  // ✅ iso 會是 "2026-02-07" 或 "2026-02-08"
   showMsg(`送出：date=${iso}`);
   hit(`${API_URL}?type=set&key=date&value=${encodeURIComponent(iso)}`);
-  setTimeout(()=>refresh().catch(()=>{}), 400);
+  setTimeout(() => refresh().catch(() => {}), 400);
 };
-// 🔴 新增：日期切換（你原本沒有）
-window.setDate = function(iso){
-  showMsg(`送出：date=${iso}`);
 
-  // 同時寫入多個可能的 key（保險）
-  hit(`${API_URL}?type=set&key=date&value=${encodeURIComponent(iso)}`);
-  hit(`${API_URL}?type=set&key=day&value=${encodeURIComponent(iso)}`);
-  hit(`${API_URL}?type=set&key=Date&value=${encodeURIComponent(iso)}`);
-  hit(`${API_URL}?type=set&key=date%20&value=${encodeURIComponent(iso)}`);
-
-  setTimeout(()=>refresh().catch(()=>{}), 500);
-};
-(async function init(){
+(async function init() {
   showMsg("讀取中…");
-  try{
+  try {
     await refresh();
     showMsg("就緒（可切日期/切場次）");
-  }catch(e){
+  } catch (e) {
     showMsg("❌ " + e.message);
   }
 })();
