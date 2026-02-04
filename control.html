@@ -1,16 +1,29 @@
-<div class="app">
-  <h1>🎮 控制板</h1>
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>羽恆盃 控制板</title>
+  <link rel="stylesheet" href="control.css?v=20260204a">
+</head>
+<body>
+  <div class="app">
+    <h1>🎮 控制板</h1>
 
-  <div class="dayRow">
-    <button class="dayBtn" onclick="setDate('2026-02-07')" id="d0702">2/7（第一天）</button>
-    <button class="dayBtn" onclick="setDate('2026-02-08')" id="d0802">2/8（第二天）</button>
+    <div class="dayRow">
+      <button class="dayBtn" onclick="setDate('2026-02-07')" id="d0702">2/7（第一天）</button>
+      <button class="dayBtn" onclick="setDate('2026-02-08')" id="d0802">2/8（第二天）</button>
 
-    <div class="spacer"></div>
+      <div class="spacer"></div>
 
-    <button class="btn" onclick="setStatus('比賽中')">▶ 比賽中</button>
-    <button class="btn warn" onclick="setStatus('中場休息')">⏸ 午休/中場休息（全部）</button>
+      <button class="btn" onclick="setStatus('比賽中')">▶ 比賽中</button>
+      <button class="btn warn" onclick="setStatus('中場休息')">⏸ 午休/中場休息（全部）</button>
+    </div>
+
+    <div id="courts" class="courts"></div>
+    <div id="msg" class="msg">狀態：待命</div>
   </div>
 
-  <div id="courts" class="courts"></div>
-  <div id="msg" class="msg">狀態：待命</div>
-</div>
+  <script src="control.js?v=20260204a"></script>
+</body>
+</html>
