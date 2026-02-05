@@ -1,38 +1,18 @@
 const API_URL =
-  "https://script.google.com/macros/s/AKfycby1uXfJ15dzycw1Oej0WGGLN_wyy5RrA6JL_0uf19ivT9RdFXjNjri4fsWoutrkOBhY9w/exec";
+  "https://script.google.com/macros/s/AKfycbxbkOw4wND_WIj1xG1GWZphtY4Btv3x7KGZo14N_lcIp_eoxTnCkABadJ9TV2bcDoh9Vw/exec";
 
 function showMsg(t){
   const el = document.getElementById("msg");
   if(el) el.textContent = "狀態：" + t;
 }
+function loadJSONP(){
+  return new Promise((resolve,reject)=>{
+    const cb = "cb_" + Date.now() + "_" + Math.random().toString(36).slice(2);
+    window[cb] = (p) => { delete window[cb]; script.remove(); resolve(p); };
 
-/* ✅ 日期正規化：避免 Z/時區造成顯示變 2/6、2/7 的錯覺 */
-function normalizeDate(v){
-  if(!v) return "";
-  let s = String(v).trim();
-  if(s.includes("T")) s = s.slice(0,10);     // 2026-02-07T...Z -> 2026-02-07
-  s = s.replace(/\//g,"-");                  // 2026/2/7 -> 2026-2-7
-
-  if(/^\d{1,2}-\d{1,2}$/.test(s)){           // 2-7 -> 2026-02-07
-    const [m,d]=s.split("-").map(x=>x.padStart(2,"0"));
-    return `2026-${m}-${d}`;
-  }
-  const m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
-  if(m) return `${m[1]}-${m[2].padStart(2,"0")}-${m[3].padStart(2,"0")}`;
-  return s;
-}
-
-// JSONP 讀取（不怕 CORS）
-function loadJSONP(url){
-  return new Promise((resolve, reject) => {
-    const cb = "cb_" + Math.random().toString(36).slice(2);
-    window[cb] = (payload) => {
-      delete window[cb];
-      script.remove();
-      resolve(payload);
-    };
     const script = document.createElement("script");
-    script.src = `${url}?callback=${cb}&_=${Date.now()}`;
+    // ✅ 同時帶 callback 與 cb 兩種參數名（保險）
+    script.src = `${API_URL}?type=get&callback=${cb}&cb=${cb}&_=${Date.now()}`;
     script.onerror = () => reject(new Error("JSONP 載入失敗"));
     document.body.appendChild(script);
   });
@@ -42,7 +22,7 @@ function loadJSONP(url){
 function hit(url){
   const img = new Image();
   img.onload = () => showMsg("✅ 已送出（看顯示版是否變）");
-  img.onerror = () => showMsg("⚠️ 送出可能成功但回應被擋（看顯示版）");
+  img.onerror = () => showMsg("⚠️ 回應被擋但可能成功（請看顯示版）");
   img.src = url + "&_=" + Date.now();
 }
 
@@ -51,12 +31,9 @@ async function refresh(){
   if(!p.ok) throw new Error(p.error || "讀取失敗");
   const state = p.data || {};
 
-  // 亮起日期按鈕（吃得下 T...Z）
-  const dateIso = normalizeDate(state.date || state.day || state.Date);
-  const b7 = document.getElementById("d0702");
-  const b8 = document.getElementById("d0802");
-  if(b7) b7.classList.toggle("active", dateIso === "2026-02-07");
-  if(b8) b8.classList.toggle("active", dateIso === "2026-02-08");
+  // 亮起日期按鈕
+  document.getElementById("d0702").classList.toggle("active", state.date === "2026-02-07");
+  document.getElementById("d0802").classList.toggle("active", state.date === "2026-02-08");
 
   // 6 場地卡片顯示目前 idx
   const host = document.getElementById("courts");
@@ -85,22 +62,32 @@ window.stepCourt = function(courtKey, delta, idx){
   const nextVal = Math.max(0, idx + delta);
   showMsg(`送出：${courtKey} → ${nextVal}`);
   hit(`${API_URL}?type=set&key=${encodeURIComponent(courtKey)}&value=${encodeURIComponent(nextVal)}`);
-  setTimeout(()=>refresh().catch(()=>{}), 450);
+  // 讓控制板自己也更新一下
+  setTimeout(()=>refresh().catch(()=>{}), 400);
 };
 
 window.setStatus = function(text){
   showMsg(`送出：status=${text}`);
   hit(`${API_URL}?type=set&key=status&value=${encodeURIComponent(text)}`);
-  setTimeout(()=>refresh().catch(()=>{}), 450);
 };
 
 window.setDate = function(iso){
   showMsg(`送出：date=${iso}`);
-  // ✅ 新後端允許 date 直接寫入
   hit(`${API_URL}?type=set&key=date&value=${encodeURIComponent(iso)}`);
-  setTimeout(()=>refresh().catch(()=>{}), 450);
+  setTimeout(()=>refresh().catch(()=>{}), 400);
 };
+// 🔴 新增：日期切換（你原本沒有）
+window.setDate = function(iso){
+  showMsg(`送出：date=${iso}`);
 
+  // 同時寫入多個可能的 key（保險）
+  hit(`${API_URL}?type=set&key=date&value=${encodeURIComponent(iso)}`);
+  hit(`${API_URL}?type=set&key=day&value=${encodeURIComponent(iso)}`);
+  hit(`${API_URL}?type=set&key=Date&value=${encodeURIComponent(iso)}`);
+  hit(`${API_URL}?type=set&key=date%20&value=${encodeURIComponent(iso)}`);
+
+  setTimeout(()=>refresh().catch(()=>{}), 500);
+};
 (async function init(){
   showMsg("讀取中…");
   try{
