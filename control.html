@@ -1,16 +1,41 @@
-<div class="app">
-  <h1>🎮 控制板</h1>
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>羽恆盃 控制板</title>
 
-  <div class="dayRow">
-    <button class="dayBtn" onclick="setDate('2026-02-07')" id="d0702">2/7（第一天）</button>
-    <button class="dayBtn" onclick="setDate('2026-02-08')" id="d0802">2/8（第二天）</button>
+  <!-- ⚠️ 一定要有，GitHub Pages 才會載到樣式 -->
+  <link rel="stylesheet" href="control.css?v=20260204">
+</head>
 
-    <div class="spacer"></div>
+<body>
+  <div class="app">
+    <h1>🎮 控制板</h1>
 
-    <button class="btn" onclick="setStatus('比賽中')">▶ 比賽中</button>
-    <button class="btn warn" onclick="setStatus('中場休息')">⏸ 午休/中場休息（全部）</button>
+    <div class="dayRow">
+      <button class="dayBtn" onclick="setDate('2026-02-07')" id="d0702">
+        2/7（第一天）
+      </button>
+      <button class="dayBtn" onclick="setDate('2026-02-08')" id="d0802">
+        2/8（第二天）
+      </button>
+
+      <div class="spacer"></div>
+
+      <button class="btn" onclick="setStatus('比賽中')">
+        ▶ 比賽中
+      </button>
+      <button class="btn warn" onclick="setStatus('中場休息')">
+        ⏸ 午休 / 中場休息（全部）
+      </button>
+    </div>
+
+    <div id="courts" class="courts"></div>
+    <div id="msg" class="msg">狀態：待命</div>
   </div>
 
-  <div id="courts" class="courts"></div>
-  <div id="msg" class="msg">狀態：待命</div>
-</div>
+  <!-- ⚠️ 一定要放在 body 最下面，否則畫面會空 -->
+  <script src="control.js?v=20260204"></script>
+</body>
+</html>
