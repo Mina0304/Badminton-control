@@ -33,18 +33,33 @@ h1{margin:0 0 12px 0;}
 .btn.warn{border-color:#555;}
 .btn:active{transform:scale(.98);}
 
+/* ✅ iPad/手機更穩：固定每張卡最小寬度，超出就橫向滑 */
 .courts{
   display:grid;
-  grid-template-columns: repeat(6, minmax(200px, 1fr));
+  grid-auto-flow: column;              /* 讓它像一排卡片 */
+  grid-auto-columns: minmax(220px, 1fr);
   gap:12px;
+
   overflow-x:auto;
+  -webkit-overflow-scrolling: touch;   /* iOS 滑動更順 */
   padding-bottom:8px;
 }
+
+/* ✅ 桌機寬螢幕時恢復 6 欄 */
+@media (min-width: 1200px){
+  .courts{
+    grid-auto-flow: initial;
+    grid-template-columns: repeat(6, minmax(200px, 1fr));
+    grid-auto-columns: initial;
+  }
+}
+
 .card{
   background:#111;
   border:1px solid #333;
   border-radius:14px;
   padding:14px;
+  min-width:220px;                     /* ✅ 防止卡片被壓到太窄 */
 }
 .head{
   display:flex;
